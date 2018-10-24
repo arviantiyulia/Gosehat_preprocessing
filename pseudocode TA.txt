@@ -1,0 +1,41 @@
+#getSymptoms
+
+looping seluruh inputan
+	select database table gejala yang mengandung inputan
+	append ke variabel rows
+
+looping variabel rows
+	jika panjang rows lebih dari 1
+		lakukan looping sebanyak panjang rows
+			buat variabel temp_id untuk menyimpan tiap rows dengan inisialisai count 0
+			buat variabel temp_gejala untuk menyimpan nama_gejala
+			buat variabel temp_gj untuk memisahkan tiap kata pada temp_gejala
+			buat variabel id_new untuk menyimpan hasil id dari fungsi getSymptomLens
+			tambahkan id_new ke variabel arr_id
+
+	jika panjang row sama dengan 1
+		simpan id ke variabel temp_gejala2
+		tambahkan temp_gejala ke arr_id
+
+buat variabel save_id untuk menyimpan id dari gejala tanpa duplikat
+
+
+#getSymptomLens
+
+looping berdasarkan tiap kata yang telah dipisahkan
+	jika kata diatas terdapat pada inputan user
+		variabel count tambah 1
+buat variabel count_arr untuk menyimpan hasil akhir dari count
+
+looping sebanyak rows
+	buat variabel new_id untuk menyimpan id dan count yang sudah didapatkan
+	simpan new_id ke temp_id
+
+looping sebanyak panjang temp_id
+	inisialisai maxItem = 0
+
+	jika value array sama
+		cari id yang terkecil
+	jika tidak, dilakukan pengecekan apakah lebih dari maxItem
+		maxItem diisi dengan count		
+		simpan id count yang terbesar

@@ -1,0 +1,7 @@
+    # cursor = conn.cursor()
+    # cursor.execute("SELECT kata_stopword FROM stopword")
+    # rows = cursor.fetchall()
+
+    # for row in rows:
+    #     for col in row:
+    #         stopwords.append(col)

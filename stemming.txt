@@ -1,0 +1,79 @@
+def stemming (doc):
+    factory = StemmerFactory()
+    stemmer = factory.create_stemmer()
+    stem = []
+
+    len_array = len(doc)
+    for i in range(len_array):
+        temp = doc[i]
+        result_stem = stemmer.stem(temp)
+        stem.append(result_stem)
+
+    return stem
+
+def getSymptoms(conn, inputs):
+    cursor = conn.cursor()
+    rows = []
+    temp_gj = []
+    arr_id = []
+    count_arr = []
+    temp_id = []
+
+    #looping untuk mengambil data yang sesuai di database dengan inputan
+    for i in inputs:
+        cursor.execute("SELECT * FROM gejala WHERE nama_gejala LIKE '%"+i+"%'")
+        rows.append(cursor.fetchall())
+    # for r in rows:
+    #     print(r)
+    
+    #looping untuk menyimpan data yang lebih dari 2 gejala
+    for row in rows:
+        # print("row = ", row)
+        if len(row) > 1:
+            for j in range(len(row)): 
+                count = 0
+                temp_id.append([row[j][0],count])
+            
+                temp_gejala = row[j][1] #mengambil nama_gejala dari tuple
+                temp_gj = temp_gejala.split(" ") #memisahkan tiap kata dari tuple
+                
+                # print(temp_gj)
+                id_new = getSymptomLens(inputs, temp_gj, temp_id, count_arr)
+            # print(id_new)
+            arr_id.append(id_new)
+            
+            
+
+            #     # mencari banyak kata dari input dengan data
+            #     for gj in temp_gj:
+            #         if gj in inputs:
+            #             count+=1
+            #     count_arr.append(count)
+                
+            #     # print(temp_id)
+            #     #mengupdate data mana yang memiliki jumlah kata lebih banyak
+            #     for ti in range(len(temp_id)):
+            #         new_id = [temp_id[ti][0], count_arr[ti]]
+            #         temp_id[ti] = new_id
+                
+            #     # #mencari nilai tertinggi     
+            #     for index, val in enumerate(temp_id):
+            #         maxItem = 0
+            #         id = 0
+            #         if val[1] > maxItem:
+            #             maxItem = val[1]
+            #             id = val[0]
+
+            # #menyimpan id dengan jumlah tertinggi
+            # arr_id.append(id)
+            # print(arr_id)
+
+        elif len(row) == 1:
+            temp_gejala2 = row[0][0]
+            arr_id.append(temp_gejala2)
+            # print("arr_id = ", arr_id)
+    
+    save_id = list(set(arr_id))
+    print(save_id)
+
+    return row
