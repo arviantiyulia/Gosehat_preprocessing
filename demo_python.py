@@ -169,6 +169,8 @@ def count_highest_disease(conn, count_id):
             max_item = jumlah_penyakit[jp]
             id_disease = temp_id_penyakit[jp]
 
+    print('jumlah perhitungan adalah ', max_item)
+    print('id nya adalah ', id_disease)
     return id_disease
 
 
