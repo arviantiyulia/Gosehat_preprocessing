@@ -170,6 +170,7 @@ def get_max_id(inputs, split_gejala, temp_id, count_arr):
     min_item = 1000
     id_min_count = 0
 
+    #looping digunakan untuk mencari gejala yang jumalh katanya paling sedikit
     for len_count in range(len(temp_max_count)):
         if len(temp_max_count[len_count][2].split()) < min_item:
             min_item = len(temp_max_count[len_count][2].split())
