@@ -1,25 +1,29 @@
 import csv
-import psycopg2
-from config import config
+from db import create_connection
 
 def open_csv():
+    """
+    fungsi digunakan untuk membaca file csv
+    @:param gejala(list):digunakan untuk menyimpan hasil baca file csv tiap baris nya
+    @:return list: hasil dari tiap baris dari file csv
+    """
     gejala = []
-    with open('gejala_penyakit.csv', 'r') as csvfile:
+
+    with open('file/gejala_penyakit.csv', 'r') as csvfile:
         read_data = csv.reader(csvfile)
+        #looping tiap baris dari file csv
         for r in read_data:
             gejala.append(r)
 
     return gejala
 
-
-def create_connection():
-    """ Connect to the PostgreSQL database server """
-    params = config()
-    conn = psycopg2.connect(**params)
-
-    return conn
-
 def import_gejala(conn, gj):
+    """
+    fungsi ini digunakan untuk menginputkan data hasil dari cvs kedalam database
+    :param conn: koneksi ke database
+    :param gj: array yang berisi data hasil csv
+    :return: list hasil dari gejala
+    """
     cursor = conn.cursor()
 
     for g in gj:
@@ -42,13 +46,11 @@ def import_gejala_penyakit(conn, gp):
 
     print(penyakit_gejala)
     for pg in penyakit_gejala:
-        for p in range(len(pg)):
-            # print(pg[p])
-            penyakit = pg[0]
-            daftar_gejala = pg[1]
-            for g in daftar_gejala:
-                cursor.execute("INSERT INTO gejala_penyakit(id_penyakit, id_gejala) VALUES('"+penyakit+"','"+g+"')")
-                conn.commit()
+        penyakit = pg[0]
+        daftar_gejala = pg[1]
+        for g in daftar_gejala:
+            cursor.execute("INSERT INTO gejala_penyakit(id_penyakit, id_gejala) VALUES('"+penyakit+"','"+g+"')")
+            conn.commit()
 
     return gejala, penyakit
 

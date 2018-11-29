@@ -4,7 +4,7 @@ from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
 from operator import itemgetter
 from collections import Counter
 import psycopg2
-from config import config
+from db import config
 import csv
 
 
@@ -80,7 +80,7 @@ def get_sinonim(inputs):
     sinonims = []
     sin_inputs = []
 
-    with open('sinonim.csv', 'r') as csvfile:
+    with open('sinonim.file', 'r') as csvfile:
         read_data = csv.reader(csvfile)
         for r in read_data:
             sinonims.append(r)
@@ -268,7 +268,7 @@ def main():
 
     conn = create_connection()
     text = "saya merasa lelah, sakit tenggorokan, flu, batuk. kira-kira saya kenapa ?"
-    stopwords = get_stopword('konjungsi.csv')
+    stopwords = get_stopword('konjungsi.file')
     contents = tokenizing(text)
     filters = filtering(contents, stopwords)
     stems = stemming(filters)

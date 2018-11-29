@@ -1,7 +1,7 @@
 import re
 from itertools import groupby
 import psycopg2
-from config import config
+from db import create_connection
 import csv
 
 import mysql.connector
@@ -18,15 +18,6 @@ from collections import Counter
 #         #                                database='gosehatcoba')
 #
 #     return conn
-
-def create_connection():
-
-    """ Connect to the PostgreSQL database server """
-    params = config()
-    conn = psycopg2.connect(**params)
-
-    return conn
-
 
 def get_stopword(stopwordList):
     """ get stopword data from CSV file """
@@ -59,6 +50,7 @@ def filtering(docs, stopwords):
     """filtering process to delete word is not important"""
 
     res_token = [text for text in docs if text not in stopwords]
+    # print(res_token)
     return res_token
 
 
@@ -75,24 +67,23 @@ def stemming(doc):
         result_stem = stemmer.stem(temp)
         stem.append(result_stem)
 
+    # print(stem)
     return stem
 
 
 def get_sinonim(inputs):
-
     sinonims = []
     sin_inputs = []
 
-    with open('sinonim.csv', 'r') as csvfile:
+    with open('file/sinonim.csv', 'r') as csvfile:
         read_data = csv.reader(csvfile)
         for r in read_data:
             sinonims.append(r)
 
-
     for input in inputs:
         found = False
         for index in range(len(sinonims)):
-            if input==sinonims[index][1]:
+            if input == sinonims[index][1]:
                 found = True
                 sin_inputs.append(sinonims[index][0])
                 break
@@ -113,31 +104,18 @@ def get_symptoms(conn, inputs):
     for i in inputs:
         cursor.execute("SELECT * FROM gejala WHERE nama_gejala LIKE '%" + i + "%'")
         rows.append(cursor.fetchall())
-        # print(rows)
+    # print(len(rows))
 
     # looping untuk menyimpan data yang lebih dari 2 gejala
     for row in rows:
         if len(row) > 1:
-            temp_id = []
-            count_arr = []
-
-            no = 0
-            # print(row)
-            for j in range(len(row)):
-                temp_id.append([row[j][0], 0, row[j][1]])
-
-                temp_gejala = row[j][1]  # mengambil nama_gejala dari tuple
-                split_gejala = temp_gejala.split(" ")  # memisahkan tiap kata dari tuple
-
-                id_new = get_max_id(inputs, split_gejala, temp_id, count_arr)
-
-
+            id_new = get_max_id(inputs, row)
             arr_id.append(id_new)
 
         elif len(row) == 1:
             temp_gejala2 = row[0][0]
             arr_id.append(temp_gejala2)
-    # print(temp_gejala2)
+
     id_gejala = list(set(arr_id))
 
     print(id_gejala)
@@ -145,37 +123,40 @@ def get_symptoms(conn, inputs):
     return id_gejala
 
 
-def get_max_id(inputs, split_gejala, temp_id, count_arr):
+def get_max_id(input, row):
     """mendapatkan id yang tertinggi dari inputan user"""
-
-    count = 0
+    gejala_arr = []
     temp_max_count = []
-
-    # mencari banyak kata dari input dengan data
-    for gj in split_gejala:
-        if gj in inputs:
-            count += 1
-    count_arr.append(count)
-
-    # mengupdate data mana yang memiliki jumlah kata lebih banyak
-    for ti in range(len(temp_id)):
-        new_id = [temp_id[ti][0], count_arr[ti], temp_id[ti][2]]
-        temp_id[ti] = new_id
-
-
-    sorted_ti = sorted(temp_id)
-    max_ti = max(sorted_ti, key=itemgetter(1))
-    max_count = max_ti[1]
-    print("sorted_ti = ", sorted_ti)
-
-    for sort in sorted_ti:
-        if sort[1] == max_count:
-            temp_max_count.append(sort)
-
     min_item = 1000
     id_min_count = 0
 
-    #looping digunakan untuk mencari gejala yang jumalh katanya paling sedikit
+    for r in row:
+        gejala_new = [r[0], 0, r[1]]
+        gejala_arr.append(gejala_new)
+
+    #digunakan untuk melakukan stemming hasil gejala yang didapat dari database
+    for gj in gejala_arr:
+        gejala_split = gj[2].split(" ")
+        gejala_stemm = stemming(gejala_split)
+        gejala_join = ' '.join(gejala_stemm)
+        gj[2] = gejala_join
+
+    for gj in gejala_arr:
+        count = 0
+        for nama_gejala in gj[2].split(" "):
+            if nama_gejala in input:
+                count += 1;
+        gj[1] = count
+
+    max_ti = max(gejala_arr, key=itemgetter(1))
+    max_count = max_ti[1]
+
+    # mencari data yang memiliki jumlah kata yang sama dengan max
+    for sort in gejala_arr:
+        if sort[1] == max_count:
+            temp_max_count.append(sort)
+
+    # looping digunakan untuk mencari gejala yang jumalh katanya paling sedikit
     for len_count in range(len(temp_max_count)):
         if len(temp_max_count[len_count][2].split()) < min_item:
             min_item = len(temp_max_count[len_count][2].split())
@@ -248,8 +229,8 @@ def certainty_calculate(id_dis):
         # print("arr_cf = ", arr_cf)
     return arr_cf
 
-def get_disease(conn, cf, id):
 
+def get_disease(conn, cf, id):
     max_item = 0
     id_disease = 0
     cursor = conn.cursor()
@@ -268,10 +249,9 @@ def get_disease(conn, cf, id):
 
 
 def get_cf(text):
-
     conn = create_connection()
     input = text
-    stopwords = get_stopword('konjungsi.csv')
+    stopwords = get_stopword('file/konjungsi.csv')
     contents = tokenizing(input)
     filters = filtering(contents, stopwords)
     stems = stemming(filters)
@@ -288,8 +268,8 @@ def get_cf(text):
 
 def main():
     conn = create_connection()
-    text = "saya merasa lelah, sakit tenggorokan, pilek, batuk darah. kira-kira saya kenapa ?"
-    stopwords = get_stopword('konjungsi.csv')
+    text = "saya merasa lelah, sakit tenggorokan, pilek, bercak merah di kulit. kira-kira saya kenapa ?"
+    stopwords = get_stopword('file/konjungsi.csv')
     contents = tokenizing(text)
     filters = filtering(contents, stopwords)
     stems = stemming(filters)
@@ -303,4 +283,4 @@ def main():
 
 if __name__ == "__main__":
     # main()
-    get_cf("saya batuk darah, demam, mata berair dan pusing")
+    get_cf("saya batuk darah, demam, flu dan pusing, lidah berwarna putih")
