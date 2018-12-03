@@ -20,6 +20,8 @@ def get_symptoms(conn, inputs):
 
     result_id = symptoms_count(rows, inputs)
 
+    print(result_id)
+
     return result_id
 
 

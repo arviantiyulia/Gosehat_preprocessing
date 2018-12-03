@@ -3,7 +3,7 @@ from preprocessing import get_stopword, tokenizing, filtering, stemming
 from sinonim import get_sinonim
 from symptoms import get_symptoms
 from disease_symptoms import get_id_disease
-from lama.certainty_factor import certainty_calculate
+from certaintyfactor import certainty_calculate
 from disease import get_disease
 
 
